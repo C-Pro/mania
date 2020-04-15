@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"regexp"
 	"strconv"
 
 	"cloud.google.com/go/firestore"
@@ -60,8 +61,8 @@ type Category struct {
 }
 
 // GetCategories returns categories from Firestore
-func (db *DB) GetCategories(ctx context.Context) ([]Category, error) {
-	cats := []Category{}
+func (db *DB) GetCategories(ctx context.Context) ([]*Category, error) {
+	cats := []*Category{}
 	iter := db.cl.Collection("categories").Documents(ctx)
 	for {
 		doc, err := iter.Next()
@@ -76,7 +77,7 @@ func (db *DB) GetCategories(ctx context.Context) ([]Category, error) {
 			return cats, err
 		}
 
-		cats = append(cats, cat)
+		cats = append(cats, &cat)
 	}
 	return cats, nil
 }
@@ -145,8 +146,8 @@ func mapToCategory(m map[string]interface{}) (Category, error) {
 }
 
 // GetItems returns menu items from Firestore
-func (db *DB) GetItems(ctx context.Context) (map[int]Item, error) {
-	items := make(map[int]Item)
+func (db *DB) GetItems(ctx context.Context) (map[int]*Item, error) {
+	items := make(map[int]*Item)
 	iter := db.cl.Collection("products").Documents(ctx)
 	for {
 		doc, err := iter.Next()
@@ -161,7 +162,7 @@ func (db *DB) GetItems(ctx context.Context) (map[int]Item, error) {
 			return items, err
 		}
 
-		items[item.ID] = item
+		items[item.ID] = &item
 	}
 	return items, nil
 }
@@ -187,6 +188,19 @@ func mapToItem(m map[string]interface{}) (Item, error) {
 	if !ok {
 		return item, errors.New("bad product name")
 	}
+	item.Name = cleanupString(item.Name)
+
+	item.Composition, ok = m["composition"].(string)
+	if !ok {
+		return item, errors.New("bad product composition")
+	}
+	item.Composition = fixNutrients(cleanupString(item.Composition))
+
+	item.Description, ok = m["description"].(string)
+	if !ok {
+		return item, errors.New("bad product description")
+	}
+	item.Description = cleanupString(item.Description)
 
 	s, ok = m["price"].(string)
 	if !ok {
@@ -201,4 +215,26 @@ func mapToItem(m map[string]interface{}) (Item, error) {
 	item.Price = f
 
 	return item, nil
+}
+
+var (
+	// matches html entities and unicode BOM mark
+	removeRe = regexp.MustCompile(`&[^;]+;|\x{feff}`)
+	spacesRe = regexp.MustCompile(`\s+`)
+	// matches nutrients composition strings lacking spaces like
+	// "соусБ-20,5Ж-27,4У-6,3 Ккал-257"
+	nutrientsRe = regexp.MustCompile(`([^\s])(Б-[0-9,.]+)(Ж-[0-9,.]+)(У-[0-9,.]+)`)
+)
+
+// cleanupString removes newlines, html entities, normalizes spaces
+func cleanupString(s string) string {
+	s = removeRe.ReplaceAllString(s, "")
+	return spacesRe.ReplaceAllString(s, " ")
+}
+
+// fixNutrients fixes composition nutrients info formatting
+// composition strings for some reason do not have spaces between
+// nutrients, like: "фирменный соусБ-20,5Ж-27,4У-6,3 Ккал-257"
+func fixNutrients(s string) string {
+	return nutrientsRe.ReplaceAllString(s, "$1 $2 $3 $4")
 }
