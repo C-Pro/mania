@@ -1,5 +1,5 @@
 steps:
-  - name: cpro29a/go-ci-image
+  - name: "cpro29a/go-ci-image:go1.13.4"
     args: ["make", "checks-ci"]
     timeout: "600s"
   - name: "gcr.io/cloud-builders/gcloud"

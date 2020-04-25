@@ -7,12 +7,16 @@ import (
 	"mania/store"
 )
 
-var ENoIntent = errors.New("no intent handler found")
+// ErrNoIntent is raised when no handler is found for the event
+var ErrNoIntent = errors.New("no intent handler found")
 
+// IntentHandler intent handler function type
 type IntentHandler func(dialogflow.Request) (dialogflow.Response, error)
 
+// IntentName type for intent name
 type IntentName string
 
+// Intent names "enum"
 const (
 	ListCategories    IntentName = "list_categories"
 	ListCategoryItems IntentName = "get_category_items"
@@ -47,7 +51,7 @@ func NewDispatcher(store Store) *Dispatcher {
 func (d *Dispatcher) GetHandler(intentName string) (IntentHandler, error) {
 	h, ok := d.intentMap[IntentName(intentName)]
 	if !ok {
-		return nil, ENoIntent
+		return nil, ErrNoIntent
 	}
 	return h, nil
 }
