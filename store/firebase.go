@@ -223,7 +223,7 @@ var (
 	spacesRe = regexp.MustCompile(`\s+`)
 	// matches nutrients composition strings lacking spaces like
 	// "соусБ-20,5Ж-27,4У-6,3 Ккал-257"
-	nutrientsRe = regexp.MustCompile(`([^\s])(Б-[0-9,.]+)(Ж-[0-9,.]+)(У-[0-9,.]+)`)
+	nutrientsRe = regexp.MustCompile(`(Б-[0-9,.]+)(Ж-[0-9,.]+)(У-[0-9,.]+)`)
 )
 
 // cleanupString removes newlines, html entities, normalizes spaces
@@ -236,5 +236,5 @@ func cleanupString(s string) string {
 // composition strings for some reason do not have spaces between
 // nutrients, like: "фирменный соусБ-20,5Ж-27,4У-6,3 Ккал-257"
 func fixNutrients(s string) string {
-	return nutrientsRe.ReplaceAllString(s, "$1 $2 $3 $4")
+	return nutrientsRe.ReplaceAllString(s, " $1%, $2%, $3%, пищевая ценность: $4")
 }

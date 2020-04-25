@@ -1,0 +1,7 @@
+steps:
+  - name: cpro29a/go-ci-image
+    args: ["make", "checks-ci"]
+    timeout: "600s"
+  - name: "gcr.io/cloud-builders/gcloud"
+    args: ["app", "deploy"]
+    timeout: "600s"

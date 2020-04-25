@@ -1,68 +1,115 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"log"
 	"net/http"
-
-	"github.com/golang/protobuf/jsonpb"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"mania/intents"
+	"mania/store"
 
-	"google.golang.org/genproto/googleapis/cloud/dialogflow/v2"
+	"mania/dialogflow"
 )
 
-const timeFormat = "2006-01-02 15:04:05"
+const (
+	maxTries = 10
+)
 
 func writeError(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusInternalServerError)
-	w.Write([]byte("error"))
+	if _, err := w.Write([]byte("error")); err != nil {
+		log.Printf("failed to write error response: %v", err)
+	}
 }
 
 func logRequest(r *http.Request) {
 	log.Printf("%s %s: %s %s\n", r.RemoteAddr, r.Referer(), r.Method, r.RequestURI)
 }
 
-func WebhookHandler(w http.ResponseWriter, r *http.Request) {
-	logRequest(r)
+// MakeWebhookHandler returns handler function with dispatcher
+func MakeWebhookHandler(d *intents.Dispatcher) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		logRequest(r)
 
-	req := dialogflow.WebhookRequest{}
+		req := dialogflow.Request{}
 
-	if err := jsonpb.Unmarshal(r.Body, &req); err != nil {
-		log.Println(err)
-		writeError(w)
-		return
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			log.Println(err)
+			writeError(w)
+			return
+		}
+		defer r.Body.Close()
+
+		w.Header().Add("Access-Control-Allow-Origin", "*")
+		w.Header().Add("Content-Type", "application/json; charset=utf-8")
+
+		h, err := d.GetHandler(req.QueryResult.Intent.DisplayName) //???
+		if err != nil {
+			log.Printf("failed to get handler: %v", err)
+			writeError(w)
+			return
+		}
+
+		resp, err := h(req)
+		if err != nil {
+			log.Println(err)
+			writeError(w)
+			return
+		}
+
+		if err := json.NewEncoder(w).Encode(&resp); err != nil {
+			log.Printf("failed to write response to %s: %v", r.RemoteAddr, err)
+		}
 	}
-	defer r.Body.Close()
+}
 
-	w.Header().Add("Access-Control-Allow-Origin", "*")
-	w.Header().Add("Content-Type", "application/json; charset=utf-8")
-	m := jsonpb.Marshaler{Indent: "  "}
-	s, _ := m.MarshalToString(&req)
-	log.Printf("REQ:\n%s\n", s)
+func initCache(ctx context.Context) *store.Cache {
+	var (
+		s   *store.Cache
+		err error
+	)
 
-	h, err := intents.GetHandler(req.QueryResult.Intent.DisplayName)
+	for i := 0; i < maxTries; i++ {
+		s, err = store.NewCache(ctx)
+		if err != nil {
+			log.Printf("failed to create Cache instance: %v", err)
+			time.Sleep(5 * time.Second)
+			continue
+		}
+		break
+	}
+
 	if err != nil {
-		log.Println(err)
-		writeError(w)
-		return
+		log.Fatalf("failed to initialize Cache after %d tries", maxTries)
 	}
 
-	resp, err := h(req)
-	if err != nil {
-		log.Println(err)
-		writeError(w)
-		return
-	}
-
-	s, _ = m.MarshalToString(&resp)
-	log.Printf("RESP:\n%s\n", s)
-
-	m.Marshal(w, &resp)
+	return s
 }
 
 func main() {
-	http.HandleFunc("/", WebhookHandler)
-	if err := http.ListenAndServe("0.0.0.0:8080", nil); err != nil {
-		panic(err)
-	}
+	ctx, cancel := context.WithCancel(context.Background())
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	s := initCache(ctx)
+	d := intents.NewDispatcher(s)
+	handlerFunc := MakeWebhookHandler(d)
+
+	http.HandleFunc("/", handlerFunc)
+
+	go func() {
+		if err := http.ListenAndServe("0.0.0.0:8080", nil); err != nil {
+			panic(err)
+		}
+	}()
+
+	<-sigs
+	cancel()
+	log.Printf("shutting down")
+	time.Sleep(time.Second)
 }

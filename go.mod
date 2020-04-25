@@ -6,7 +6,9 @@ require (
 	cloud.google.com/go v0.38.0
 	firebase.google.com/go v3.12.0+incompatible
 	github.com/davecgh/go-spew v1.1.0
+	github.com/gogo/protobuf v1.3.1
 	github.com/golang/protobuf v1.3.3
+	github.com/google/go-cmp v0.3.0
 	github.com/labstack/gommon v0.3.0
 	github.com/shopspring/decimal v0.0.0-20200227202807-02e2044944cc
 	go.opencensus.io v0.22.3 // indirect

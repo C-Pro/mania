@@ -3,7 +3,6 @@ package store
 import (
 	"testing"
 
-	"github.com/davecgh/go-spew/spew"
 	"golang.org/x/net/context"
 )
 
@@ -33,7 +32,7 @@ func TestGetCategories(t *testing.T) {
 
 	//b, _ := json.Marshal(cats)
 	//fmt.Println(string(b))
-	spew.Dump(cats)
+	//spew.Dump(cats)
 }
 
 func TestGetItems(t *testing.T) {
@@ -54,5 +53,5 @@ func TestGetItems(t *testing.T) {
 
 	//b, _ := json.Marshal(cats)
 	//fmt.Println(string(b))
-	spew.Dump(items)
+	//spew.Dump(items)
 }

@@ -4,10 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"sync"
 	"time"
-
-	"github.com/labstack/gommon/log"
 )
 
 const (
@@ -75,7 +74,7 @@ func (c *cacheData) populate(ctx context.Context) error {
 	}
 
 	c.itemsByName = make(map[string]*Item, len(c.items))
-	for i := range c.categories {
+	for i := range c.items {
 		c.itemsByName[c.items[i].Name] = c.items[i]
 	}
 

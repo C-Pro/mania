@@ -1,8 +1,9 @@
 package intents
 
-import "google.golang.org/genproto/googleapis/cloud/dialogflow/v2"
+import "mania/dialogflow"
 
-func ListCategoryItemsHandler(req dialogflow.WebhookRequest) (dialogflow.WebhookResponse, error) {
-	resp := dialogflow.WebhookResponse{}
+// ListCategoryItemsHandler handles get_category_items intent
+func (d *Dispatcher) ListCategoryItemsHandler(req dialogflow.Request) (dialogflow.Response, error) {
+	resp := dialogflow.Response{}
 	return resp, nil
 }
