@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -103,7 +104,12 @@ func main() {
 	http.HandleFunc("/", handlerFunc)
 
 	go func() {
-		if err := http.ListenAndServe("0.0.0.0:8080", nil); err != nil {
+		port := os.Getenv("PORT")
+		if port == "" {
+			port = "8080"
+		}
+		addr := fmt.Sprintf("0.0.0.0:%s", port)
+		if err := http.ListenAndServe(addr, nil); err != nil {
 			panic(err)
 		}
 	}()
