@@ -19,7 +19,7 @@ type Position struct {
 
 // Session holds user conversation context
 type Session struct {
-	CurrentPage uint
+	CurrentPage int
 	Cart        map[int]Position
 	created     time.Time
 }
@@ -66,13 +66,13 @@ func (ss *Sessions) cleanupLoop(ctx context.Context) {
 	tick := time.NewTicker(expireInterval)
 
 	for {
-		ss.cleanupExpiredSessions()
-
 		select {
 		case <-ctx.Done():
-			break
+			return
 		case <-tick.C:
 		}
+
+		ss.cleanupExpiredSessions()
 	}
 }
 
@@ -84,8 +84,8 @@ func (ss *Sessions) NewSession(id string) {
 	ss.sessions[id] = newSession()
 }
 
-// SetPage Sets current page for paging operations in the session
-func (ss *Sessions) SetPage(id string, currentPage uint) {
+// NextPage increments current page for paging operations in the session
+func (ss *Sessions) NextPage(id string) {
 	ss.mux.Lock()
 	defer ss.mux.Unlock()
 
@@ -94,8 +94,20 @@ func (ss *Sessions) SetPage(id string, currentPage uint) {
 		s = newSession()
 	}
 
-	s.CurrentPage = currentPage
+	s.CurrentPage++
 	ss.sessions[id] = s
+}
+
+// ResetPage sets current page for paging operations in the session to zero
+func (ss *Sessions) ResetPage(id string) {
+	ss.mux.Lock()
+	defer ss.mux.Unlock()
+
+	s, ok := ss.sessions[id]
+	if ok {
+		s.CurrentPage = 0
+		ss.sessions[id] = s
+	}
 }
 
 // AddPosition adds position to user's cart

@@ -97,7 +97,7 @@ func main() {
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
 	s := initCache(ctx)
-	d := intents.NewDispatcher(s)
+	d := intents.NewDispatcher(ctx, s)
 	handlerFunc := MakeWebhookHandler(d)
 
 	http.HandleFunc("/", handlerFunc)

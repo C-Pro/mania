@@ -1,6 +1,7 @@
 package intents
 
 import (
+	"context"
 	"errors"
 
 	"mania/dialogflow"
@@ -18,8 +19,9 @@ type IntentName string
 
 // Intent names "enum"
 const (
-	ListCategories    IntentName = "list_categories"
-	ListCategoryItems IntentName = "get_category_items"
+	ListCategories     IntentName = "list_categories"
+	ListCategoryItems  IntentName = "get_category_items"
+	ListCategoriesNext IntentName = "list_categories_next"
 )
 
 // Store provides functions to access menu data
@@ -31,17 +33,22 @@ type Store interface {
 // Dispatcher provides handlers for intents
 type Dispatcher struct {
 	cache     Store
+	sessions  *store.Sessions
 	intentMap map[IntentName]IntentHandler
+	pageSize  int
 }
 
 // NewDispatcher returns new *Dispatcher instance
-func NewDispatcher(store Store) *Dispatcher {
+func NewDispatcher(ctx context.Context, s Store) *Dispatcher {
 	d := Dispatcher{
-		cache: store,
+		cache:    s,
+		sessions: store.NewSessions(ctx),
+		pageSize: 7,
 	}
 	d.intentMap = map[IntentName]IntentHandler{
-		ListCategories:    d.ListCategoriesHandler,
-		ListCategoryItems: d.ListCategoryItemsHandler,
+		ListCategories:     d.ListCategoriesHandler,
+		ListCategoryItems:  d.ListCategoryItemsHandler,
+		ListCategoriesNext: d.ListCategoriesNextHandler,
 	}
 
 	return &d
