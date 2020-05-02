@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -29,7 +31,14 @@ func writeError(w http.ResponseWriter) {
 }
 
 func logRequest(r *http.Request) {
-	log.Printf("%s %s: %s %s\n", r.RemoteAddr, r.Referer(), r.Method, r.RequestURI)
+	body, _ := ioutil.ReadAll(r.Body)
+	r.Body = ioutil.NopCloser(bytes.NewReader(body))
+	log.Printf("%s %s: %s %s\nbody: '%s'\n",
+		r.RemoteAddr,
+		r.Referer(),
+		r.Method,
+		r.RequestURI,
+		string(body))
 }
 
 // MakeWebhookHandler returns handler function with dispatcher

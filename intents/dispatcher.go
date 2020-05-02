@@ -19,9 +19,10 @@ type IntentName string
 
 // Intent names "enum"
 const (
-	ListCategories     IntentName = "list_categories"
-	ListCategoryItems  IntentName = "get_category_items"
-	ListCategoriesNext IntentName = "list_categories_next"
+	ListCategories        IntentName = "list_categories"
+	ListCategoryItems     IntentName = "get_category_items"
+	ListCategoriesNext    IntentName = "list_categories_next"
+	ListCategoryItemsNext IntentName = "get_category_items_next"
 )
 
 // Store provides functions to access menu data
