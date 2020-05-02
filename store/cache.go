@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strings"
 	"sync"
 	"time"
 )
@@ -65,7 +66,7 @@ func (c *cacheData) populate(ctx context.Context) error {
 
 	c.categoriesByName = make(map[string]*Category, len(c.categories))
 	for i := range c.categories {
-		c.categoriesByName[c.categories[i].Name] = c.categories[i]
+		c.categoriesByName[strings.ToLower(c.categories[i].Name)] = c.categories[i]
 	}
 
 	c.items, err = db.GetItems(timeoutCtx)
@@ -75,7 +76,7 @@ func (c *cacheData) populate(ctx context.Context) error {
 
 	c.itemsByName = make(map[string]*Item, len(c.items))
 	for i := range c.items {
-		c.itemsByName[c.items[i].Name] = c.items[i]
+		c.itemsByName[strings.ToLower(c.items[i].Name)] = c.items[i]
 	}
 
 	return nil
@@ -128,7 +129,7 @@ func (c *Cache) GetItemsPage(categoryName string, pageNum, pageSize int) ([]*Ite
 	c.mux.RLock()
 	defer c.mux.RUnlock()
 
-	cat, ok := c.data.categoriesByName[categoryName]
+	cat, ok := c.data.categoriesByName[strings.ToLower(categoryName)]
 	if !ok {
 		return nil, sql.ErrNoRows
 	}
@@ -167,7 +168,7 @@ func (c *Cache) GetItem(itemName string) (*Item, error) {
 	c.mux.RLock()
 	defer c.mux.RUnlock()
 
-	item, ok := c.data.itemsByName[itemName]
+	item, ok := c.data.itemsByName[strings.ToLower(itemName)]
 	if !ok {
 		return nil, sql.ErrNoRows
 	}
