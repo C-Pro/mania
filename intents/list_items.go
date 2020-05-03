@@ -37,7 +37,7 @@ func (d *Dispatcher) ListCategoryItemsHandler(req dialogflow.Request) (dialogflo
 	text := fmt.Sprintf(
 		`%s.
 Назовите продукт, чтобы узнать о нём подробней или добавить в корзину,
-или 'далее', чтобы вы вывести ещё.`,
+или скажите дальше, чтобы вы вывести ещё.`,
 		itemList)
 
 	// skip details for next pages
