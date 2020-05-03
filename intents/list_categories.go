@@ -23,8 +23,13 @@ func (d *Dispatcher) ListCategoriesHandler(req dialogflow.Request) (dialogflow.R
 	text := fmt.Sprintf(
 		`Вот некоторые из категорий: %s.
 Назовите категорию, чтобы посмотреть товары в ней,
-или скажите 'дальше', чтобы вы вести ещё категории.`,
+или 'далее', чтобы вы вывести ещё категории.`,
 		catList)
+
+	// skip details for next pages
+	if sess.CurrentPage > 0 {
+		text = catList
+	}
 	resp := dialogflow.GenerateResponse(true, text)
 
 	return resp, nil
