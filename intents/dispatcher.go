@@ -23,12 +23,14 @@ const (
 	ListCategoryItems     IntentName = "get_category_items"
 	ListCategoriesNext    IntentName = "list_categories_next"
 	ListCategoryItemsNext IntentName = "get_category_items_next"
+	GetItem               IntentName = "get_category_item"
 )
 
 // Store provides functions to access menu data
 type Store interface {
 	GetCategoriesPage(pageNum, pageSize int) []*store.Category
 	GetItemsPage(categoryName string, pageNum, pageSize int) ([]*store.Item, error)
+	GetItem(itemName string) (*store.Item, error)
 }
 
 // Dispatcher provides handlers for intents
@@ -47,9 +49,11 @@ func NewDispatcher(ctx context.Context, s Store) *Dispatcher {
 		pageSize: 7,
 	}
 	d.intentMap = map[IntentName]IntentHandler{
-		ListCategories:     d.ListCategoriesHandler,
-		ListCategoryItems:  d.ListCategoryItemsHandler,
-		ListCategoriesNext: d.ListCategoriesNextHandler,
+		ListCategories:        d.ListCategoriesHandler,
+		ListCategoryItems:     d.ListCategoryItemsHandler,
+		ListCategoriesNext:    d.ListCategoriesNextHandler,
+		ListCategoryItemsNext: d.ListCategoryItemsNextHandler,
+		GetItem:               d.GetItemHandler,
 	}
 
 	return &d

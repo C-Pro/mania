@@ -43,3 +43,30 @@ func (d *Dispatcher) ListCategoryItemsHandler(req dialogflow.Request) (dialogflo
 
 	return resp, nil
 }
+
+// ListCategoryItemsNextHandler handles list_category_items_next intent
+func (d *Dispatcher) ListCategoryItemsNextHandler(req dialogflow.Request) (dialogflow.Response, error) {
+	d.sessions.NextPage(req.Session)
+	return d.ListCategoryItemsHandler(req)
+}
+
+// GetItemHandler handles get_category_item intent
+func (d *Dispatcher) GetItemHandler(req dialogflow.Request) (dialogflow.Response, error) {
+	itemName, ok := req.QueryResult.Parameters["item"].(string)
+	if !ok {
+		return dialogflow.GenerateResponse(true, "Не могу распознать блюдо"), nil
+	}
+
+	item, err := d.cache.GetItem(itemName)
+	if err != nil {
+		return dialogflow.GenerateResponse(false, "Не удалось получить информацию о блюде"), err
+	}
+
+	text := fmt.Sprintf("%s\n%s\nЦена: %5.2fр.",
+		item.Description,
+		item.Composition,
+		item.Price)
+	resp := dialogflow.GenerateResponse(true, text)
+
+	return resp, nil
+}
