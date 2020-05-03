@@ -22,8 +22,8 @@ func (d *Dispatcher) ListCategoriesHandler(req dialogflow.Request) (dialogflow.R
 	catList := strings.Join(catNames, ", ")
 	text := fmt.Sprintf(
 		`Вот некоторые из категорий: %s.
-Назовите категорию, чтобы посмотреть товары в ней,
-или скажите дальше, чтобы вы вывести ещё категории.`,
+Назовите категорию, чтобы посмотреть товары в ней.
+Скажите дальше, чтобы вывести ещё категории.`,
 		catList)
 
 	// skip details for next pages
