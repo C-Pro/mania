@@ -24,6 +24,7 @@ const (
 	ListCategoriesNext    IntentName = "list_categories_next"
 	ListCategoryItemsNext IntentName = "get_category_items_next"
 	GetItem               IntentName = "get_category_item"
+	AddToCartContext      IntentName = "add_to_cart_context"
 )
 
 // Store provides functions to access menu data
@@ -54,6 +55,7 @@ func NewDispatcher(ctx context.Context, s Store) *Dispatcher {
 		ListCategoriesNext:    d.ListCategoriesNextHandler,
 		ListCategoryItemsNext: d.ListCategoryItemsNextHandler,
 		GetItem:               d.GetItemHandler,
+		AddToCartContext:      d.AddToCartHandler,
 	}
 
 	return &d

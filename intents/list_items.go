@@ -67,7 +67,7 @@ func (d *Dispatcher) GetItemHandler(req dialogflow.Request) (dialogflow.Response
 		return dialogflow.GenerateResponse(false, "Не удалось получить информацию о блюде"), err
 	}
 
-	text := fmt.Sprintf("%s\n%s\nЦена: %5.2fр.",
+	text := fmt.Sprintf("%s\n%s\nЦена: %5.2f рублей",
 		item.Description,
 		item.Composition,
 		item.Price)
