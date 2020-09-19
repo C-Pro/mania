@@ -20,7 +20,6 @@ func (d *Dispatcher) AddToCartHandler(req dialogflow.Request) (dialogflow.Respon
 		return dialogflow.GenerateResponse(false, "Не удалось получить информацию о блюде"), err
 	}
 
-
 	quantity := uint(1)
 	numberStr, ok := req.QueryResult.Parameters["number"].(string)
 	if ok {
