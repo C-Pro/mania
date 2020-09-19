@@ -25,6 +25,7 @@ const (
 	ListCategoryItemsNext IntentName = "get_category_items_next"
 	GetItem               IntentName = "get_category_item"
 	AddToCartContext      IntentName = "add_to_cart_context"
+	Checkout              IntentName = "checkout"
 )
 
 // Store provides functions to access menu data
@@ -34,21 +35,33 @@ type Store interface {
 	GetItem(itemName string) (*store.Item, error)
 }
 
+// Sender provides send method to deliver order to the kitchen
+type Sender interface {
+	Send(text, address string) error
+}
+
 // Dispatcher provides handlers for intents
 type Dispatcher struct {
 	cache     Store
 	sessions  *store.Sessions
 	intentMap map[IntentName]IntentHandler
 	pageSize  int
+	Sender
 }
 
 // NewDispatcher returns new *Dispatcher instance
-func NewDispatcher(ctx context.Context, s Store) *Dispatcher {
+func NewDispatcher(
+	ctx context.Context,
+	st Store,
+	sn Sender,
+) *Dispatcher {
 	d := Dispatcher{
-		cache:    s,
+		cache:    st,
 		sessions: store.NewSessions(ctx),
 		pageSize: 7,
+		Sender:   sn,
 	}
+
 	d.intentMap = map[IntentName]IntentHandler{
 		ListCategories:        d.ListCategoriesHandler,
 		ListCategoryItems:     d.ListCategoryItemsHandler,
@@ -56,6 +69,7 @@ func NewDispatcher(ctx context.Context, s Store) *Dispatcher {
 		ListCategoryItemsNext: d.ListCategoryItemsNextHandler,
 		GetItem:               d.GetItemHandler,
 		AddToCartContext:      d.AddToCartHandler,
+		Checkout:              d.CheckoutHandler,
 	}
 
 	return &d

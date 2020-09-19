@@ -1,3 +1,4 @@
 .vscode
 examples
 credentials.json
+**/node_modules
