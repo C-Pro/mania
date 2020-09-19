@@ -56,7 +56,7 @@ func (ss *Sessions) cleanupExpiredSessions() {
 	defer ss.mux.Unlock()
 
 	for k := range ss.sessions {
-		if time.Now().UTC().Sub(ss.sessions[k].created) < maxTTL {
+		if time.Now().UTC().Sub(ss.sessions[k].created) > maxTTL {
 			delete(ss.sessions, k)
 		}
 	}
@@ -121,6 +121,7 @@ func (ss *Sessions) AddPosition(id string, pos Position) {
 	s, ok := ss.sessions[id]
 	if !ok {
 		s = newSession()
+		ss.sessions[id] = s
 	}
 
 	log.Printf("L0G: Adding position %v to session %s", pos, id)
@@ -165,7 +166,8 @@ func (ss *Sessions) GetSession(id string) Session {
 	}
 
 	log.Printf("L0G: Session %s is empty", id)
-	ss.sessions[id] = newSession()
+	s = newSession()
+	ss.sessions[id] = s
 
-	return *ss.sessions[id]
+	return *s
 }
