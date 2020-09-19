@@ -20,6 +20,8 @@ func (d *Dispatcher) AddToCartHandler(req dialogflow.Request) (dialogflow.Respon
 		return dialogflow.GenerateResponse(false, "Не удалось получить информацию о блюде"), err
 	}
 
+	fmt.Printf("AAAAAAAAAAAAAAAAAAAAAAA: %v", item)
+
 	quantity := uint(1)
 	numberStr, ok := req.QueryResult.Parameters["number"].(string)
 	if ok {
@@ -45,7 +47,6 @@ func (d *Dispatcher) AddToCartHandler(req dialogflow.Request) (dialogflow.Respon
 	}
 
 	text := fmt.Sprintf("В корзине %d товаров на сумму %5.2f рублей", cnt, amount)
-	resp := dialogflow.GenerateResponse(true, text)
 
-	return resp, nil
+	return dialogflow.GenerateResponse(true, text), nil
 }
