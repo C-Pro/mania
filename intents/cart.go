@@ -15,12 +15,11 @@ func (d *Dispatcher) AddToCartHandler(req dialogflow.Request) (dialogflow.Respon
 		return dialogflow.GenerateResponse(true, "Не могу распознать блюдо"), nil
 	}
 
-	fmt.Printf("ITEM: %s", itemName)
-
 	item, err := d.cache.GetItem(itemName)
 	if err != nil {
 		return dialogflow.GenerateResponse(false, "Не удалось получить информацию о блюде"), err
 	}
+
 
 	quantity := uint(1)
 	numberStr, ok := req.QueryResult.Parameters["number"].(string)

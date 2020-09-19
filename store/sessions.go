@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 )
@@ -81,6 +82,8 @@ func (ss *Sessions) NewSession(id string) {
 	ss.mux.Lock()
 	defer ss.mux.Unlock()
 
+	fmt.Printf("L0G: Creating new session %s", id)
+
 	ss.sessions[id] = newSession()
 }
 
@@ -120,6 +123,8 @@ func (ss *Sessions) AddPosition(id string, pos Position) {
 		s = newSession()
 	}
 
+	fmt.Printf("L0G: Adding position %v to session %s", pos, id)
+
 	s.Cart[pos.Item.ID] = pos
 }
 
@@ -150,10 +155,16 @@ func (ss *Sessions) GetSession(id string) Session {
 	ss.mux.RLock()
 	defer ss.mux.RUnlock()
 
+	fmt.Printf("L0G: Returning session %s", id)
+
 	s := ss.sessions[id]
 	if s != nil {
+
+		fmt.Printf("L0G: Session %s: %v", id, *s)
 		return *s
 	}
+
+	fmt.Printf("L0G: Session %s is empty", id)
 
 	return Session{}
 }
