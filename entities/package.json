@@ -10,7 +10,7 @@
     "license": "ISC",
     "dependencies": {
         "actions-on-google": "^3.0.0",
-        "dialogflow": "^1.2.0"
+        "dialogflow": "^4.0.3"
     },
     "devDependencies": {
         "eslint": "^5.6.0",
